@@ -97,9 +97,9 @@ El frontend corre en http://localhost:4200
 
 **Decisiones técnicas (3–4 puntos):**
 
-1. **Simplificación del frontend**: El frontend original tenía CRUD completo (crear, editar, eliminar) pero el backend del README solo requiere POST (crear) y GET (listar). Decidí simplificar el frontend al mínimo para cumplir exactamente con los requisitos, eliminando edición y eliminación. Esto alinea con el principio del README de "no sobre-ingenierices".
+1. **Simplificación del frontend**: El frontend requiere POST (crear) y GET (listar). Esto alinea con el principio del README de "no sobre-ingenierices". Es decir: "No hacer de mas"
 
-2. **Basic Auth en lugar de JWT**: El frontend original usaba JWT con login dinámico. Para este backend, implementé Basic Auth simple que usa las credenciales ADMIN_USER/ADMIN_PASSWORD del .env. Es más simple, cumple con los requisitos de autenticación para el panel protegido, y no requiere estado de sesión.
+2. **Basic Auth en lugar de JWT**: En el frontend implementé Basic Auth simple que usa las credenciales ADMIN_USER/ADMIN_PASSWORD del .env. Es más simple, cumple con los requisitos de autenticación para el panel protegido, y no requiere estado de sesión.
 
 3. **CORS para desarrollo**: Agregué middleware CORS en el backend para permitir requests desde localhost:4200 (frontend Angular). Esto es necesario porque ambos servicios corren en puertos diferentes (3000 y 4200).
 

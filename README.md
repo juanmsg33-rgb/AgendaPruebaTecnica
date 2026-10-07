@@ -36,34 +36,6 @@ npx ng serve
 
 El frontend corre en: http://localhost:4200
 
-## 📁 Estructura del Proyecto
-
-```
-.
-├── prueba-full-stack/        # Backend (Express + SQLite)
-│   ├── src/
-│   │   ├── db.js           # Esquema de base de datos
-│   │   ├── middleware/
-│   │   │   └── auth.js     # Autenticación Basic Auth
-│   │   ├── routes/
-│   │   │   └── contacts.js # Endpoints POST/GET
-│   │   └── server.js       # Servidor Express
-│   └── db/                 # Archivos de SQLite (ignorados por git)
-│
-└── frontend/               # Frontend (Angular + Material UI)
-    ├── src/
-    │   └── app/
-    │       ├── core/
-    │       │   ├── models/      # Modelo de Contact
-    │       │   ├── services/    # Servicio HTTP
-    │       │   └── interceptors/ # Interceptor Basic Auth
-    │       └── features/
-    │           └── contacts/
-    │               ├── contact-form/  # Formulario de creación
-    │               └── contact-list/  # Lista de contactos
-    └── angular.json
-```
-
 ## 🔧 Configuración
 
 ### Backend (.env)
@@ -74,8 +46,6 @@ El archivo `.env` en `prueba-full-stack/` se crea copiando `.env.example`:
 cd prueba-full-stack
 cp .env.example .env     # en Windows: copy .env.example .env
 ```
-
-**IMPORTANTE**: No commits el archivo `.env` (está en .gitignore). Las credenciales están en `.env.example` pero debes cambiarlas en producción.
 
 Para más detalles, consulta el README del backend: [prueba-full-stack/README.md](prueba-full-stack/README.md)
 
@@ -150,7 +120,7 @@ Lista todos los contactos del más reciente al más antiguo.
 
 ### Decisiones Técnicas
 
-1. **Simplificación del frontend**: El frontend original tenía CRUD completo pero el backend solo requiere POST y GET. Se simplificó para cumplir exactamente con los requisitos.
+1. **Simplificación del frontend**: El frontend cumple con los requisitos del backend solo requiere POST y GET.
 
 2. **Basic Auth en lugar de JWT**: Más simple para este proyecto, cumple con los requisitos, usa credenciales estáticas del .env.
 
