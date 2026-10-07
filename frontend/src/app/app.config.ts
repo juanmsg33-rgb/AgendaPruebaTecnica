@@ -53,13 +53,13 @@ export const appConfig: ApplicationConfig = {
     //  HttpClient con Interceptor
     // ─────────────────────────────────────────────────────────
     //
-    - Configura el cliente HTTP de Angular.
-    - Registra el authInterceptor que inyecta Basic Auth
-    - Todas las requests HTTP pasarán por este interceptor
+    // Configura el cliente HTTP de Angular.
+    // Registra el authInterceptor que inyecta Basic Auth
+    // Todas las requests HTTP pasarán por este interceptor
     //
     // Por qué withInterceptors?
-    - Es la forma moderna de registrar interceptores en Angular 17+
-    - Más simple que el antiguo HTTP_INTERCEPTORS en NgModule
+    // - Es la forma moderna de registrar interceptores en Angular 17+
+    // - Más simple que el antiguo HTTP_INTERCEPTORS en NgModule
     // ─────────────────────────────────────────────────────────
 
     provideHttpClient(

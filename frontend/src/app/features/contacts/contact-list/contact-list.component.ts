@@ -115,6 +115,52 @@ export class ContactListComponent {
   public displayedColumns: string[] = ['name', 'email', 'message', 'date'];
 
   // ─────────────────────────────────────────────────────────
+  //  Constructor - Cargar contactos al iniciar
+  // ─────────────────────────────────────────────────────────
+  //
+  // Al crear el componente, intentamos cargar los contactos.
+  // Si falla (por ejemplo, sin internet), mostramos un error.
+  // ─────────────────────────────────────────────────────────
+
+  constructor() {
+    this.loadContactsWithErrorHandling();
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  loadContactsWithErrorHandling() - Cargar con manejo de errores
+  // ─────────────────────────────────────────────────────────
+
+  private loadContactsWithErrorHandling(): void {
+    this.contactService.refreshContacts().subscribe({
+      error: (err) => this.handleConnectionError(err)
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  handleConnectionError() - Manejar errores de conexión
+  // ─────────────────────────────────────────────────────────
+  //
+  // Detecta si es un error de red/internet y muestra mensaje apropiado.
+  // ─────────────────────────────────────────────────────────
+
+  private handleConnectionError(error: any): void {
+    let errorMessage = 'Error al cargar los contactos';
+
+    // Detectar si es error de red/internet
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+    } else if (error.status === 0) {
+      errorMessage = 'No se pudo conectar al servidor. Verifica que el backend esté corriendo.';
+    } else if (error.status === 401) {
+      errorMessage = 'Error de autenticación. Credenciales inválidas.';
+    } else if (error.status >= 500) {
+      errorMessage = 'Error del servidor. Intenta más tarde.';
+    }
+
+    this.showMessage(errorMessage, 5000);
+  }
+
+  // ─────────────────────────────────────────────────────────
   //  openForm() - Abrir formulario de creación
   // ─────────────────────────────────────────────────────────
   //
@@ -125,7 +171,7 @@ export class ContactListComponent {
   // 2. Escucha el evento 'save' del formulario
   // 3. Cuando el usuario guarda, llama al servicio para crear el contacto
   // 4. Si éxito, muestra mensaje y cierra el dialog
-  // 5. Si error, muestra mensaje de error
+  // 5. Si error, muestra mensaje de error específico
   //
   // El servicio contactService automáticamente actualiza la lista
   // después de crear (via tap() en el método create()).
@@ -144,8 +190,7 @@ export class ContactListComponent {
           dialogRef.close();
         },
         error: (err) => {
-          const msg = err.error?.error || 'Error al crear el contacto';
-          this.showMessage(msg);
+          this.handleCreateError(err);
         }
       });
     });
@@ -155,14 +200,43 @@ export class ContactListComponent {
   }
 
   // ─────────────────────────────────────────────────────────
+  //  handleCreateError() - Manejar errores al crear contacto
+  // ─────────────────────────────────────────────────────────
+  //
+  // Detecta el tipo de error y muestra mensaje apropiado.
+  // ─────────────────────────────────────────────────────────
+
+  private handleCreateError(error: any): void {
+    let errorMessage = 'Error al crear el contacto';
+
+    // Detectar si es error de red/internet
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+    } else if (error.status === 0) {
+      errorMessage = 'No se pudo conectar al servidor. Verifica que el backend esté corriendo.';
+    } else if (error.status === 400) {
+      errorMessage = error.error?.error || 'Datos inválidos. Verifica el formulario.';
+    } else if (error.status === 401) {
+      errorMessage = 'Error de autenticación. Credenciales inválidas.';
+    } else if (error.status >= 500) {
+      errorMessage = 'Error del servidor. Intenta más tarde.';
+    }
+
+    this.showMessage(errorMessage, 5000);
+  }
+
+  // ─────────────────────────────────────────────────────────
   //  showMessage() - Mostrar notificación
   // ─────────────────────────────────────────────────────────
   //
   // Usa MatSnackBar de Angular Material para mostrar mensajes
-  // temporales (3 segundos) en la parte inferior de la pantalla.
+  // temporales en la parte inferior de la pantalla.
+  //
+  // - duration: tiempo en ms (por defecto 3000ms = 3 segundos)
+  // - Los errores de conexión se muestran por más tiempo (5000ms)
   // ─────────────────────────────────────────────────────────
 
-  private showMessage(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 3000 });
+  private showMessage(msg: string, duration: number = 3000): void {
+    this.snackBar.open(msg, 'Cerrar', { duration });
   }
 }

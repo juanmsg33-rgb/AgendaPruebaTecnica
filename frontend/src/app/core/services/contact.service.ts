@@ -21,7 +21,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Contact } from '../models/contact.model';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root' // Servicio singleton disponible en toda la app
@@ -64,10 +64,17 @@ export class ContactService {
   // El interceptor auth.interceptor.ts inyecta Basic Auth automáticamente.
   // ─────────────────────────────────────────────────────────
 
-  public refreshContacts(): void {
-    this.http.get<Contact[]>(this.apiUrl).subscribe(data => {
-      this.contactsSignal.set(data);
-    });
+  public refreshContacts(): Observable<Contact[]> {
+    return this.http.get<Contact[]>(this.apiUrl).pipe(
+      tap({
+        next: (data) => {
+          this.contactsSignal.set(data);
+        },
+        error: (err) => {
+          console.error('Error al cargar contactos:', err);
+        }
+      })
+    );
   }
 
   // ─────────────────────────────────────────────────────────
@@ -84,7 +91,13 @@ export class ContactService {
 
   public create(contact: Contact): Observable<Contact> {
     return this.http.post<Contact>(this.apiUrl, contact).pipe(
-      tap(() => this.refreshContacts()) // Actualizamos la lista automáticamente
+      tap({
+        next: () => this.refreshContacts(), // Actualizamos la lista automáticamente
+        error: (err) => {
+          console.error('Error al crear contacto:', err);
+          // El error se propaga al componente para manejo específico
+        }
+      })
     );
   }
 }

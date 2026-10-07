@@ -115,6 +115,8 @@ Lista todos los contactos del más reciente al más antiguo.
 - ✅ Lista de contactos en vista de administración
 - ✅ Autenticación automática via interceptor
 - ✅ UI con Angular Material
+- ✅ Manejo de errores de conexión con mensajes toast específicos
+- ✅ Detección de errores de red/internet
 
 ## 📝 Notas para la Entrevista
 
