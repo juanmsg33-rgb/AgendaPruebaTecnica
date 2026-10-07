@@ -21,7 +21,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Contact } from '../models/contact.model';
-import { Observable, tap, Subject } from 'rxjs';
+import { Observable, tap, catchError, map, of, switchMap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root' // Servicio singleton disponible en toda la app
@@ -49,10 +49,10 @@ export class ContactService {
   private contactsSignal = signal<Contact[]>([]);
   public contacts = computed(() => this.contactsSignal());
 
-  // Al inicializar, cargar los contactos desde el backend
-  constructor() {
-    this.refreshContacts();
-  }
+  // Al inicializar no hacemos la carga aquí: refreshContacts() devuelve un
+  // Observable "frío" que NO se ejecuta si nadie se suscribe. La carga inicial
+  // la dispara ContactListComponent (que además maneja los errores de red).
+  constructor() {}
 
   // ─────────────────────────────────────────────────────────
   //  refreshContacts() - Listar contactos
@@ -82,17 +82,36 @@ export class ContactService {
   // ─────────────────────────────────────────────────────────
   //
   // Hace un POST al backend para crear un nuevo contacto.
-  // Usa tap() para actualizar la lista automáticamente después de crear.
+  // Usa switchMap() para refrescar la lista automáticamente después de crear.
   //
   // Por qué tap() y no subscribe en el componente?
   // - Permite que el servicio gestione el refresco de datos
   // - El componente solo se preocupa de manejar éxito/error
   // ─────────────────────────────────────────────────────────
 
+  //  ⚠ Nota importante: this.refreshContacts() devuelve un Observable "frío".
+  //  Si solo lo llamamos sin suscribirnos, el GET **nunca se dispara** y la
+  //  lista no se actualiza (hay que recargar la página a mano). Por eso lo
+  //  encadenamos con switchMap: primero el POST y, en cuanto responde, el GET
+  //  que actualiza el signal. El componente recibe 'next' con la lista ya
+  //  refrescada, así que al cerrar el diálogo el contacto ya aparece.
+  // ─────────────────────────────────────────────────────────
+
   public create(contact: Contact): Observable<Contact> {
     return this.http.post<Contact>(this.apiUrl, contact).pipe(
+      switchMap((created) =>
+        this.refreshContacts().pipe(
+          // Devolvemos el contacto creado para no cambiar la firma del método
+          map(() => created),
+          // El contacto SÍ se creó: si falla solo el refresco no debemos
+          // reportar un error de creación al componente
+          catchError((err) => {
+            console.error('Error al refrescar la lista:', err);
+            return of(created);
+          })
+        )
+      ),
       tap({
-        next: () => this.refreshContacts(), // Actualizamos la lista automáticamente
         error: (err) => {
           console.error('Error al crear contacto:', err);
           // El error se propaga al componente para manejo específico
